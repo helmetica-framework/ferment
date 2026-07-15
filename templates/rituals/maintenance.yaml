@@ -1,0 +1,16 @@
+apiVersion: rituals.helmetica.io/v1
+kind: Definition
+metadata:
+  name: maintenance
+spec:
+  description: TODO describe the weekly maintenance of this service
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+            - name: maintenance
+              image: TODO
+              command: []
+              args: []
+          restartPolicy: Never
