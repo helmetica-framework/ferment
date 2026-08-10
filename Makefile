@@ -7,6 +7,7 @@ REGISTRY ?= oci://ghcr.io/helmetica-framework
 build: $(CHART)-$(VERSION).tgz
 
 $(CHART)-$(VERSION).tgz: Chart.yaml values.yaml $(wildcard templates/*)
+	helm dependency build .
 	helm package .
 
 push: build
