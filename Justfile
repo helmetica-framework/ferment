@@ -7,8 +7,20 @@ REGISTRY := "oci://ghcr.io/helmetica-framework"
 CHAINSAW_VERSION := "v0.2.15"
 CHAINSAW_CMD := "go run github.com/kyverno/chainsaw@" + CHAINSAW_VERSION
 
+# renovate: datasource=github-releases depName=helm-unittest/helm-unittest
+UNITTEST_VERSION := "v1.1.2"
+
 _default:
     @just --list
+
+# Lint the chart and unit test the rendered templates
+test:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    helm plugin list | grep -q '^unittest' \
+        || helm plugin install https://github.com/helm-unittest/helm-unittest --version {{ UNITTEST_VERSION }}
+    helm lint .
+    helm unittest --file 'test/unit/*_test.yaml' .
 
 # Package the chart
 build:

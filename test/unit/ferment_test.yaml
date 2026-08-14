@@ -1,0 +1,44 @@
+suite: ferment starter chart
+release:
+  name: instance
+tests:
+  - it: renders the backup retention from the values
+    templates:
+      - backup.yaml
+    asserts:
+      - isKind:
+          of: ConfigMap
+      - equal:
+          path: data.retention
+          value: "6"
+
+  - it: overrides the backup retention
+    templates:
+      - backup.yaml
+    set:
+      backup.retention: 14
+    asserts:
+      - equal:
+          path: data.retention
+          value: "14"
+
+  - it: renders a ritual definition per ritual
+    templates:
+      - rituals/maintenance.yaml
+      - rituals/restart.yaml
+    asserts:
+      - isKind:
+          of: Definition
+      - isAPIVersion:
+          of: rituals.helmetica.io/v1
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.restartPolicy
+          value: Never
+
+  - it: restarts the deployment of the release
+    templates:
+      - rituals/restart.yaml
+    asserts:
+      - equal:
+          path: spec.jobTemplate.spec.template.spec.containers[0].args
+          value: ["rollout", "restart", "deployment/instance"]

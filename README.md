@@ -14,5 +14,10 @@ against a running athanor cluster (`just ignite` in athanor, `KUBECONFIG`
 pointing at it). It publishes the chart to the in-cluster registry, lets
 chrysopoeia generate the CRD from it, claims an instance and checks the release.
 
-The included test is generic and only checks if the chart installs properly.
-Any reagent specific tests and asserts are to be added by a service maintainer.
+`just test` runs `helm lint` and the offline unit tests in `test/unit`, which assert
+that the templates render as expected (helm-unittest plugin, installed by the
+recipe if missing). No cluster needed.
+
+All three are generic and only check that the chart installs and renders
+properly. Any reagent specific tests and asserts are to be added by a service
+maintainer.
