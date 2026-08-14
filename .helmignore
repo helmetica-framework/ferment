@@ -4,6 +4,7 @@
 .DS_Store
 # Common VCS dirs
 .git/
+.jj/
 .gitignore
 .bzr/
 .bzrignore
@@ -21,3 +22,6 @@
 .idea/
 *.tmproj
 .vscode/
+# Chart packages
+*.tgz
+charts/
