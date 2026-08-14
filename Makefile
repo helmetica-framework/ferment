@@ -1,8 +1,11 @@
 CHART   := $(shell awk '/^name:/{print $$2}' Chart.yaml)
 VERSION := $(shell awk '/^version:/{print $$2}' Chart.yaml)
 REGISTRY ?= oci://ghcr.io/helmetica-framework
+# renovate: datasource=go depName=github.com/kyverno/chainsaw
+CHAINSAW_VERSION := v0.2.15
+CHAINSAW_CMD := go run github.com/kyverno/chainsaw@$(CHAINSAW_VERSION)
 
-.PHONY: build push release
+.PHONY: build push release e2e
 
 build: $(CHART)-$(VERSION).tgz
 
@@ -12,6 +15,10 @@ $(CHART)-$(VERSION).tgz: Chart.yaml values.yaml $(wildcard templates/*)
 
 push: build
 	helm push $(CHART)-$(VERSION).tgz $(REGISTRY)
+
+# End-to-end test against a running athanor cluster (just ignite).
+e2e:
+	$(CHAINSAW_CMD) test --config test/e2e/chainsaw-config.yaml test/e2e
 
 # Push main, then tag current commit v$(VERSION) and push the tag,
 # triggering the release workflow. Aborts if the committed Chart.yaml
