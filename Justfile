@@ -39,10 +39,9 @@ e2e:
 release:
     #!/usr/bin/env bash
     set -euo pipefail
-    # Abort if the committed Chart.yaml version doesn't match the working copy
-    # (e.g. bump not committed/exported).
-    test "$(git show HEAD:Chart.yaml | awk '/^version:/{print $2}')" = "{{ version }}" \
-        || { echo "HEAD Chart.yaml != working {{ version }}; commit the bump first"; exit 1; }
+    # Abort if the Chart.yaml version on main doesn't match the working copy.
+    test "$(git show main:Chart.yaml | awk '/^version:/{print $2}')" = "{{ version }}" \
+        || { echo "main Chart.yaml != working {{ version }}; commit the bump and move the main bookmark first"; exit 1; }
     git push origin main
-    git tag v{{ version }}
+    git tag v{{ version }} main
     git push origin v{{ version }}
