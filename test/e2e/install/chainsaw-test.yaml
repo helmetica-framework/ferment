@@ -115,7 +115,15 @@ spec:
                   - status: "True"
 
         # Everything below comes from the ferment templates.
-        # Ass the reagent's own workload here as well, e.g. its StatefulSet becoming ready.
+        # Add the reagent's own workload here as well, e.g. its StatefulSet becoming ready.
+        # - assert:
+        #     resource:
+        #       apiVersion: apps/v1
+        #       kind: StatefulSet
+        #       metadata:
+        #         name: myservice
+        #         namespace: ($instanceNs)
+        #       (status.readyReplicas == spec.replicas): true
         - assert:
             resource:
               apiVersion: v1
@@ -137,6 +145,7 @@ spec:
               metadata:
                 name: restart
                 namespace: ($instanceNs)
+
       catch:
         - describe:
             apiVersion: helmetica.io/v1
