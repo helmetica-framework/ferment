@@ -22,6 +22,3 @@
 .idea/
 *.tmproj
 .vscode/
-# Chart packages
-*.tgz
-charts/
