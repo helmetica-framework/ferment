@@ -43,6 +43,13 @@ spec:
             outputs:
               - name: major
                 value: ($stdout)
+        # Hash of values.yaml, the file the CRD schema is generated from, so
+        # parallel runs with diverging schemas get their own API group.
+        - script:
+            content: sha256sum ../../../values.yaml | cut -c1-8 | tr -d '\n'
+            outputs:
+              - name: id
+                value: ($stdout)
 
         - apply:
             file: sources.yaml
@@ -51,7 +58,7 @@ spec:
               apiVersion: helmetica.io/v1
               kind: CustomResourceDefinitionSource
               metadata:
-                name: (join('', ['v', $major, '.', $chart]))
+                name: (join('', ['v', $major, '-', $id, '.', $chart]))
                 namespace: hel-chrysopoeia
               status:
                 (conditions[?type == 'Ready']):
@@ -61,24 +68,28 @@ spec:
         - script:
             content: |
               kubectl get crd \
-                -o jsonpath="{.items[?(@.spec.group=='v$MAJOR.$CHART.helmetica-bundles.io')].spec.names.kind}"
+                -o jsonpath="{.items[?(@.spec.group=='v$MAJOR-$ID.$CHART.helmetica-bundles.io')].spec.names.kind}"
             env:
               - name: CHART
                 value: ($chart)
               - name: MAJOR
                 value: ($major)
+              - name: ID
+                value: ($id)
             outputs:
               - name: kind
                 value: ($stdout)
         - script:
             content: |
               kubectl get crd \
-                -o jsonpath="{.items[?(@.spec.group=='v$MAJOR.$CHART.helmetica-bundles.io')].metadata.name}"
+                -o jsonpath="{.items[?(@.spec.group=='v$MAJOR-$ID.$CHART.helmetica-bundles.io')].metadata.name}"
             env:
               - name: CHART
                 value: ($chart)
               - name: MAJOR
                 value: ($major)
+              - name: ID
+                value: ($id)
             outputs:
               - name: crd
                 value: ($stdout)
@@ -87,7 +98,7 @@ spec:
             file: instance.yaml
         - assert:
             resource:
-              apiVersion: (join('', ['v', $major, '.', $chart, '.helmetica-bundles.io/bundle']))
+              apiVersion: (join('', ['v', $major, '-', $id, '.', $chart, '.helmetica-bundles.io/bundle']))
               kind: ($kind)
               metadata:
                 name: instance

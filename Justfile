@@ -31,9 +31,9 @@ build:
 push: build
     helm push {{ chart }}-{{ version }}.tgz {{ REGISTRY }}
 
-# End-to-end test against a running athanor cluster (just ignite).
-e2e:
-    {{ CHAINSAW_CMD }} test --config test/e2e/chainsaw-config.yaml test/e2e
+# Read the reagent's purity: end-to-end test against a running athanor cluster (just ignite).
+touchstone:
+    {{ CHAINSAW_CMD }} test --config test/touchstone/chainsaw-config.yaml test/touchstone
 
 # Push main, tag the current commit and push the tag to trigger the release
 release:

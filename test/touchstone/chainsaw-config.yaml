@@ -1,7 +1,7 @@
 apiVersion: chainsaw.kyverno.io/v1alpha1
 kind: Configuration
 metadata:
-  name: reagent-e2e
+  name: reagent-touchstone
 spec:
   timeouts:
     apply: 1m

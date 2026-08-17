@@ -1,4 +1,4 @@
-apiVersion: (join('', ['v', $major, '.', $chart, '.helmetica-bundles.io/bundle']))
+apiVersion: (join('', ['v', $major, '-', $id, '.', $chart, '.helmetica-bundles.io/bundle']))
 kind: ($kind)
 metadata:
   name: instance

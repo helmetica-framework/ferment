@@ -1,10 +1,12 @@
 # Chrysopoeia only watches CustomResourceDefinitionSources in its own namespace,
 # so the source trio lives in hel-chrysopoeia and not in the test namespace.
 # Names and URLs come from the chart's own metadata, nothing here is reagent specific.
+# $id is a hash of values.yaml, which the CRD schema is generated from: it keeps
+# parallel runs with diverging schemas on separate API groups.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:
-  name: (join('', [$chart, '-v', $major]))
+  name: (join('', [$chart, '-v', $major, '-', $id]))
   namespace: hel-chrysopoeia
 spec:
   interval: 5m
@@ -16,7 +18,7 @@ spec:
 apiVersion: image.toolkit.fluxcd.io/v1
 kind: ImageRepository
 metadata:
-  name: ($chart)
+  name: (join('', [$chart, '-', $id]))
   namespace: hel-chrysopoeia
 spec:
   exclusionList:
@@ -30,15 +32,15 @@ spec:
 apiVersion: helmetica.io/v1
 kind: CustomResourceDefinitionSource
 metadata:
-  name: (join('', ['v', $major, '.', $chart]))
+  name: (join('', ['v', $major, '-', $id, '.', $chart]))
   namespace: hel-chrysopoeia
 spec:
   reference:
     apiVersion: source.toolkit.fluxcd.io/v1
     kind: OCIRepository
-    name: (join('', [$chart, '-v', $major]))
+    name: (join('', [$chart, '-v', $major, '-', $id]))
   versionDiscovery:
     reference:
       apiVersion: image.toolkit.fluxcd.io/v1
       kind: ImageRepository
-      name: ($chart)
+      name: (join('', [$chart, '-', $id]))
