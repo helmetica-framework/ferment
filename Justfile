@@ -58,7 +58,7 @@ release:
 
 # Install the reagent via helm install
 mix:
-    helm install $(basename $(pwd)) .
+    helm upgrade --install $(basename $(pwd)) .
 
 # Install the reagent via helmetica into a running athanor cluster (just ignite).
 # An id, when given, is folded into the API group and the source names, so a
