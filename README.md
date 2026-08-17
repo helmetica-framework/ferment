@@ -30,6 +30,9 @@ lets chrysopoeia generate the CRD from it, claims an instance and checks the
 release. A touchstone is the dark stone an assayer streaks gold across to read
 its purity, which is what the test does to a reagent.
 
+PRs run the touchstone tests automatically, through athanor's `touchstone`
+composite action.
+
 The generated CRD's API group carries a short hash of `values.yaml` (the file
 the schema is generated from) and of the namespace chainsaw creates for the test.
 Every test therefore gets its own group and CRD, so tests running side by side,
@@ -38,6 +41,7 @@ whether siblings of one run or two runs on a shared cluster, cannot clash.
 `just test` runs `helm lint` and the offline unit tests in `test/unit`, which assert
 that the templates render as expected (helm-unittest plugin, installed by the
 recipe if missing). No cluster needed.
+
 
 All three are generic and only check that the chart installs and renders
 properly. Any reagent specific tests and asserts are to be added by a service
