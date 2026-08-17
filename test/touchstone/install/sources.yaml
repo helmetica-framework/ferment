@@ -1,8 +1,8 @@
 # Chrysopoeia only watches CustomResourceDefinitionSources in its own namespace,
 # so the source trio lives in hel-chrysopoeia and not in the test namespace.
 # Names and URLs come from the chart's own metadata, nothing here is reagent specific.
-# $id is a hash of values.yaml, which the CRD schema is generated from: it keeps
-# parallel runs with diverging schemas on separate API groups.
+# $id is a hash of values.yaml (which the CRD schema is generated from) and the
+# test namespace: it keeps every test run on its own API group.
 apiVersion: source.toolkit.fluxcd.io/v1
 kind: OCIRepository
 metadata:

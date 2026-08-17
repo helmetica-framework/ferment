@@ -43,10 +43,13 @@ spec:
             outputs:
               - name: major
                 value: ($stdout)
-        # Hash of values.yaml, the file the CRD schema is generated from, so
-        # parallel runs with diverging schemas get their own API group.
+        # Hash of values.yaml, the file the CRD schema is generated from, plus
+        # the test namespace chainsaw generated: every test gets its own API
+        # group, so parallel runs and sibling tests never share a CRD.
         - script:
-            content: sha256sum ../../../values.yaml | cut -c1-8 | tr -d '\n'
+            content: |
+              { cat ../../../values.yaml; echo "$NAMESPACE"; } \
+                | sha256sum | cut -c1-8 | tr -d '\n'
             outputs:
               - name: id
                 value: ($stdout)

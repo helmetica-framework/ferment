@@ -30,10 +30,10 @@ lets chrysopoeia generate the CRD from it, claims an instance and checks the
 release. A touchstone is the dark stone an assayer streaks gold across to read
 its purity, which is what the test does to a reagent.
 
-The generated CRD's API group carries a short hash of `values.yaml`, the file
-the schema is generated from. Runs of charts with diverging values therefore get
-their own group and cannot clash on a shared cluster. Runs of identical values
-share one, so keep that in mind when two of them overlap.
+The generated CRD's API group carries a short hash of `values.yaml` (the file
+the schema is generated from) and of the namespace chainsaw creates for the test.
+Every test therefore gets its own group and CRD, so tests running side by side,
+whether siblings of one run or two runs on a shared cluster, cannot clash.
 
 `just test` runs `helm lint` and the offline unit tests in `test/unit`, which assert
 that the templates render as expected (helm-unittest plugin, installed by the
