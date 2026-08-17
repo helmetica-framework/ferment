@@ -22,3 +22,5 @@
 .idea/
 *.tmproj
 .vscode/
+# Packaged charts of this chart itself, charts/ dependencies stay
+/*.tgz
