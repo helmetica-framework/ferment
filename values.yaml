@@ -4,4 +4,4 @@ backup:
 
 tests:
   # image used by the `helm test` pods
-  image: docker.io/library/busybox:1.37.1
+  image: docker.io/library/busybox:1.38.0
