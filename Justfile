@@ -41,7 +41,7 @@ release:
     set -euo pipefail
     # Abort if the Chart.yaml version on main doesn't match the working copy.
     test "$(git show main:Chart.yaml | awk '/^version:/{print $2}')" = "{{ version }}" \
-        || { echo "main Chart.yaml != working {{ version }}; commit the bump and move the main bookmark first"; exit 1; }
+        || { echo "main Chart.yaml != working {{ version }}; commit the bump first"; exit 1; }
     # Abort if this version was already released.
     if git ls-remote --exit-code --tags origin "v{{ version }}" >/dev/null 2>&1; then
         echo "tag v{{ version }} already exists; bump the Chart.yaml version first"
