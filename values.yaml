@@ -2,6 +2,5 @@ backup:
   # backup retention in days
   retention: 6
 
-tests:
-  # image used by the `helm test` pods
-  image: docker.io/library/busybox:1.37.1
+# The service's values go here
+serivce: {}
