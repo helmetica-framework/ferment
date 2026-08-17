@@ -3,4 +3,4 @@ backup:
   retention: 6
 
 # The service's values go here
-serivce: {}
+service: {}
