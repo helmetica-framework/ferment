@@ -71,6 +71,14 @@ infuse namespace="default" id="": build
     if [ -n "{{ id }}" ]; then suffix="-{{ id }}"; fi
     group="v{{ major }}$suffix.{{ chart }}"
 
+    # best effort pluralization
+    lower='{{ lowercase(chart) }}'
+    case "$lower" in
+        *[!aeiou]y)       plural="${lower%y}ies" ;;
+        *s|*x|*z|*ch|*sh) plural="${lower}es" ;;
+        *)                plural="${lower}s" ;;
+    esac
+
     ca=$(mktemp)
     trap 'rm -f "$ca"' EXIT
     kubectl -n kube-system get secret tls-server-certificate \
@@ -111,6 +119,9 @@ infuse namespace="default" id="": build
       name: $group
       namespace: hel-chrysopoeia
     spec:
+      crdNames:
+        kind: {{ capitalize(lowercase(chart)) }}
+        plural: $plural
       reference:
         apiVersion: source.toolkit.fluxcd.io/v1
         kind: OCIRepository
