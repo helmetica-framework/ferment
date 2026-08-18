@@ -57,8 +57,8 @@ release:
     git push origin v{{ version }}
 
 # Install the reagent via helm install
-mix:
-    helm upgrade --install $(basename $(pwd)) .
+mix namespace="default":
+    helm upgrade --install $(basename $(pwd)) . -n {{ namespace }} --wait
 
 # Install the reagent via helmetica into a running athanor cluster (just ignite).
 # An id, when given, is folded into the API group and the source names, so a
@@ -154,8 +154,8 @@ infuse namespace="default" id="": build
         -o jsonpath='{"released into namespace "}{.status.instanceNamespace}{"\n"}'
 
 # Uninstall what mix installed
-strain:
-    helm uninstall $(basename $(pwd))
+strain namespace="default":
+    helm uninstall $(basename $(pwd)) -n {{ namespace }}
 
 # Uninstall what infuse installed, including the generated CRD
 decant namespace="default" id="":
