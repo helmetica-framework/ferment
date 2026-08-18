@@ -125,6 +125,10 @@ infuse namespace="default" id="": build
     kubectl -n hel-chrysopoeia wait --for condition=Ready \
         "customresourcedefinitionsource/$group" --timeout 120s
 
+    # Manually bump the imagerepository
+    kubectl annotate imagerepository/{{ chart }}$suffix -n hel-chrysopoeia \
+        reconcile.fluxcd.io/requestedAt="$(date +%s)" --overwrite
+
     # Chrysopoeia derives kind and plural from the chart, so both are read back.
     kind=$(kubectl get crd -o jsonpath="{.items[?(@.spec.group=='$group.helmetica-bundles.io')].spec.names.kind}")
     crd=$(kubectl get crd -o jsonpath="{.items[?(@.spec.group=='$group.helmetica-bundles.io')].metadata.name}")
