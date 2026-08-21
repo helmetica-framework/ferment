@@ -2,5 +2,17 @@ backup:
   # backup retention in days
   retention: 6
 
+network:
+  # A list of allowed namespaces. The namespace where the claim resides is
+  # always included implicitly.
+  '#allowedNamespaces':
+    items:
+      '#':
+        type: string
+  allowedNamespaces: []
+
+  # Allow access from all namespaces.
+  allowAllNamespaces: false
+
 # The service's values go here
 service: {}

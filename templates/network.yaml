@@ -1,0 +1,9 @@
+apiVersion: seals.helmetica.io/v1
+kind: Seal
+metadata:
+  name: networkconfig
+spec:
+  # the claim namespace is always allowed
+  allowedNamespaces: {{ .Values.network.allowedNamespaces }}
+  allowAllNamespaces: {{ .Values.network.allowAllNamespaces }}
+
