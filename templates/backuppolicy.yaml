@@ -1,0 +1,50 @@
+{{- if .Values.backup.enabled -}}
+{{/*
+  Asking ampulla to back this service up. The policy is the whole contract between the
+  reagent and the backup controller: ampulla provisions a bucket for it, and in mode
+  Schedule backs up every persistent volume in this namespace. Nothing else in the
+  framework is involved.
+*/}}
+apiVersion: backups.helmetica.io/v1
+kind: BackupPolicy
+metadata:
+  name: {{ .Release.Name }}
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/managed-by: {{ .Release.Service }}
+spec:
+  mode: {{ .Values.backup.mode }}
+  {{- /* Only the schedules that were actually set; an empty one takes the controller's. */}}
+  {{- $schedule := dict }}
+  {{- range $key, $value := .Values.backup.schedule }}
+    {{- if $value }}
+      {{- $_ := set $schedule $key $value }}
+    {{- end }}
+  {{- end }}
+  {{- with $schedule }}
+  schedule:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+  {{- with .Values.backup.bucketClassName }}
+  bucketClassName: {{ . | quote }}
+  {{- end }}
+  {{- with .Values.backup.bucketAccessClassName }}
+  bucketAccessClassName: {{ . | quote }}
+  {{- end }}
+  {{- /*
+    Only the retention values that were actually set. An empty `retention:` key is YAML
+    null, which the API rejects as "must be of type object", and a zero here would read as
+    "keep none" when it means "take the controller's default".
+  */}}
+  {{- $retention := dict }}
+  {{- range $key, $value := .Values.backup.retention }}
+    {{- if $value }}
+      {{- $_ := set $retention $key $value }}
+    {{- end }}
+  {{- end }}
+  {{- with $retention }}
+  retention:
+    {{- toYaml . | nindent 4 }}
+  {{- end }}
+{{- end -}}

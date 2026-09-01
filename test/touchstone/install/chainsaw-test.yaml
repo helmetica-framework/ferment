@@ -138,13 +138,18 @@ spec:
         #         name: myservice
         #         namespace: ($instanceNs)
         #       (status.readyReplicas == spec.replicas): true
+        # The whole contract between a reagent and ampulla: the chart renders the policy,
+        # ampulla provisions the bucket and the schedule behind it. Ready means a real
+        # bucket exists in athanor's Garage and k8up has a Schedule pointed at it.
         - assert:
             resource:
-              apiVersion: v1
-              kind: ConfigMap
+              apiVersion: backups.helmetica.io/v1
+              kind: BackupPolicy
               metadata:
-                name: backup
+                name: instance
                 namespace: ($instanceNs)
+              status:
+                phase: Ready
         - assert:
             resource:
               apiVersion: rituals.helmetica.io/v1
@@ -172,8 +177,15 @@ spec:
         - describe:
             apiVersion: helmetica.io/v1
             kind: InstanceRevision
+        - describe:
+            apiVersion: backups.helmetica.io/v1
+            kind: BackupPolicy
         - podLogs:
             namespace: hel-chrysopoeia
+            selector: control-plane=controller-manager
+            tail: 50
+        - podLogs:
+            namespace: hel-ampulla
             selector: control-plane=controller-manager
             tail: 50
       cleanup:

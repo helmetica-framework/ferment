@@ -1,6 +1,40 @@
+# How this service is backed up. The backup controller reads these off the instance; the
+# framework itself knows nothing about backups.
 backup:
-  # backup retention in days
-  retention: 6
+  # Whether the service is backed up at all.
+  enabled: false
+
+  # Who takes the backups.
+  #   Schedule   - the backup controller provisions a bucket and drives k8up over the
+  #                service's volumes.
+  #   BucketOnly - it provisions the bucket and stops there, for a service whose own
+  #                operator writes backups to object storage (CloudNativePG, MariaDB).
+  '#mode':
+    type: string
+    enum: [Schedule, BucketOnly]
+  mode: Schedule
+
+  # When each job runs, as a cron expression or a k8up shortcut like `@daily-random`.
+  # Empty takes the backup controller's default. Only used with mode Schedule.
+  schedule:
+    backup: ""
+    prune: ""
+    check: ""
+
+  # The COSI classes the bucket is provisioned from. Empty takes the backup controller's
+  # default, which is how a cluster keeps all its backups in one place.
+  bucketClassName: ""
+  bucketAccessClassName: ""
+
+  # How many backups survive a prune. All zero takes the backup controller's default
+  # retention. Only used with mode Schedule.
+  retention:
+    keepLast: 0
+    keepHourly: 0
+    keepDaily: 0
+    keepWeekly: 0
+    keepMonthly: 0
+    keepYearly: 0
 
 # The service's values go here
 service: {}
