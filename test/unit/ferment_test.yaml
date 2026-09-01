@@ -2,25 +2,62 @@ suite: ferment starter chart
 release:
   name: instance
 tests:
-  - it: renders the backup retention from the values
+  - it: renders no BackupPolicy unless backups are enabled
     templates:
-      - backup.yaml
+      - backuppolicy.yaml
+    asserts:
+      - hasDocuments:
+          count: 0
+
+  - it: asks ampulla for backups when enabled
+    templates:
+      - backuppolicy.yaml
+    set:
+      backup.enabled: true
     asserts:
       - isKind:
-          of: ConfigMap
+          of: BackupPolicy
+      - isAPIVersion:
+          of: backups.helmetica.io/v1
       - equal:
-          path: data.retention
-          value: "6"
+          path: metadata.name
+          value: instance
+      - equal:
+          path: spec.mode
+          value: Schedule
+      - notExists:
+          path: spec.schedule
+      # An empty retention would render as YAML null, which the API rejects as "must be of
+      # type object", and a zero would read as "keep none" rather than "take the default".
+      - notExists:
+          path: spec.retention
 
-  - it: overrides the backup retention
+  - it: passes the values through to the policy
     templates:
-      - backup.yaml
+      - backuppolicy.yaml
     set:
-      backup.retention: 14
+      backup.enabled: true
+      backup.mode: BucketOnly
+      backup.schedule.backup: "0 2 * * *"
+      backup.bucketClassName: backups-lpg
+      backup.retention.keepDaily: 14
     asserts:
       - equal:
-          path: data.retention
-          value: "14"
+          path: spec.mode
+          value: BucketOnly
+      - equal:
+          path: spec.schedule.backup
+          value: "0 2 * * *"
+      - notExists:
+          path: spec.schedule.prune
+      - equal:
+          path: spec.bucketClassName
+          value: backups-lpg
+      - equal:
+          path: spec.retention.keepDaily
+          value: 14
+      - notExists:
+          path: spec.retention.keepWeekly
 
   - it: renders a ritual definition per ritual
     templates:

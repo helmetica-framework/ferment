@@ -1,6 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: backup
-data:
-  retention: {{ .Values.backup.retention | quote }}
