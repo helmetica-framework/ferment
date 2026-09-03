@@ -2,7 +2,6 @@
 # framework itself knows nothing about backups.
 backup:
   # Whether the service is backed up at all.
-  enabled: false
   enabled: true
 
   # Who takes the backups.
@@ -53,6 +52,11 @@ network:
 
   # Allow access from all namespaces.
   allowAllNamespaces: false
+
+credentials:
+  # Secret name which will contain the service's connection details.
+  # Defaults to releaseName-credentials.
+  targetSecret: ""
 
 # The service's values go here
 service: {}
