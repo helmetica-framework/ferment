@@ -2,7 +2,7 @@
 # framework itself knows nothing about backups.
 backup:
   # Whether the service is backed up at all.
-  enabled: false
+  enabled: true
 
   # Who takes the backups.
   #   Schedule   - the backup controller provisions a bucket and drives k8up over the
@@ -15,7 +15,12 @@ backup:
   mode: Schedule
 
   # When each job runs, as a cron expression or a k8up shortcut like `@daily-random`.
-  # Empty takes the backup controller's default. Only used with mode Schedule.
+  # Only used with mode Schedule.
+  #
+  # An empty backup gets a nightly time between 22:00 and 06:00, generated from the name
+  # of the instance so that it stays put across upgrades and no two instances start in the
+  # same minute. Empty prune and check take the backup controller's default, which runs
+  # them weekly.
   schedule:
     backup: ""
     prune: ""
@@ -47,6 +52,11 @@ network:
 
   # Allow access from all namespaces.
   allowAllNamespaces: false
+
+credentials:
+  # Secret name which will contain the service's connection details.
+  # Defaults to releaseName-credentials.
+  targetSecret: ""
 
 # The service's values go here
 service: {}

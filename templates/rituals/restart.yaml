@@ -2,6 +2,8 @@ apiVersion: rituals.helmetica.io/v1
 kind: Definition
 metadata:
   name: restart
+  labels:
+    {{- include "<CHARTNAME>.labels" . | nindent 4 }}
 spec:
   description: Restart the application
   jobTemplate:
