@@ -1,0 +1,15 @@
+{{/*
+  Maintenance handles two things:
+  - bumping the helm chart versions
+  - running the `maintenance.yaml` ritual cronjob
+
+  This provides a way to run scheduled housekeeping on a service.
+*/}}
+apiVersion: rituals.helmetica.io/v1
+kind: Maintenance
+metadata:
+  name: default
+spec:
+  window: {{ .Values.maintenance.window | quote }}
+  suspend: {{ .Values.maintenance.suspend }}
+
