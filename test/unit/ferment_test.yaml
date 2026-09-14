@@ -1,66 +1,53 @@
-suite: ferment starter chart
+suite: reagent templates
 release:
   name: instance
 tests:
-  - it: renders no BackupPolicy unless backups are enabled
+  # What azoth renders is azoth's own business to test, down to the kinds, the gating and
+  # the labels. This is here to catch the wiring coming loose: the dependency, the include,
+  # and the values this chart carries reaching azoth rather than azoth's own defaults.
+  - it: renders the framework's resources through azoth
     templates:
-      - backuppolicy.yaml
-    asserts:
-      - hasDocuments:
-          count: 0
-
-  - it: asks ampulla for backups when enabled
-    templates:
-      - backuppolicy.yaml
+      - azoth.yaml
     set:
-      backup.enabled: true
+      backup.mode: BucketOnly
     asserts:
-      - isKind:
-          of: BackupPolicy
-      - isAPIVersion:
-          of: backups.helmetica.io/v1
-      - equal:
-          path: metadata.name
-          value: instance
       - equal:
           path: spec.mode
-          value: Schedule
-      # Backups belong in the night, so an empty schedule is filled in here rather than
-      # left to the controller's `@daily-random`, which may pick the afternoon.
-      - matchRegex:
-          path: spec.schedule
-          pattern: ^[0-9]{1,2} (22|23|0|1|2|3|4|5) \* \* \*$
-      - notExists:
-          path: spec.pruneSchedule
-      - notExists:
-          path: spec.checkSchedule
-      # An empty retention would render as YAML null, which the API rejects as "must be of
-      # type object", and a zero would read as "keep none" rather than "take the default".
-      - notExists:
-          path: spec.retention
+          value: BucketOnly
+        documentSelector:
+          path: kind
+          value: BackupPolicy
 
-  - it: passes the values through to the policy
+  # The arcanum is this chart's own template rather than azoth's: the mapping is the chart
+  # author's to write, in the template itself, where an entry is free to turn on something
+  # helm decides.
+  - it: hands the service's connection details to arcana
     templates:
-      - backuppolicy.yaml
+      - credentials.yaml
+    asserts:
+      - isKind:
+          of: Arcanum
+      - equal:
+          path: metadata.name
+          value: credentials
+      - exists:
+          path: metadata.labels["helm.sh/chart"]
+      - equal:
+          path: spec.target.name
+          value: instance-credentials
+      # Scaffolded, the arcanum declares the secret and maps nothing into it yet.
+      - notExists:
+          path: spec.credentials.valueMapping
+
+  - it: lets the chart name the credentials secret
+    templates:
+      - credentials.yaml
     set:
-      backup.enabled: true
-      backup.schedule.backup: "0 2 * * *"
-      backup.bucketClassName: backups-lpg
-      backup.retention.keepDaily: 14
+      credentials.targetSecret: instance-conn
     asserts:
       - equal:
-          path: spec.schedule
-          value: "0 2 * * *"
-      - notExists:
-          path: spec.pruneSchedule
-      - equal:
-          path: spec.bucketClassName
-          value: backups-lpg
-      - equal:
-          path: spec.retention.keepDaily
-          value: 14
-      - notExists:
-          path: spec.retention.keepWeekly
+          path: spec.target.name
+          value: instance-conn
 
   - it: renders a ritual definition per ritual
     templates:
@@ -83,127 +70,23 @@ tests:
           path: spec.jobTemplate.spec.template.spec.containers[0].args
           value: ["rollout", "restart", "deployment/instance"]
 
-  - it: names the credentials secret after the release by default
+  # The rituals are this chart's own templates, so they label themselves through azoth's
+  # helper rather than getting the labels handed to them. The chart name is not pinned to a
+  # value here: this file is scaffolded into a reagent as it stands, where the name is the
+  # reagent's.
+  - it: labels the rituals it renders
     templates:
-      - credentials.yaml
-    asserts:
-      - isKind:
-          of: Arcanum
-      - isAPIVersion:
-          of: arcana.helmetica.io/v1
-      - equal:
-          path: spec.target.name
-          value: instance-credentials
-
-  - it: lets the reagent name the credentials secret
-    templates:
-      - credentials.yaml
-    set:
-      credentials.targetSecret: redis-credentials
-    asserts:
-      - equal:
-          path: spec.target.name
-          value: redis-credentials
-
-  - it: seals the service off by default
-    templates:
-      - network.yaml
-    asserts:
-      - isKind:
-          of: Seal
-      - equal:
-          path: spec.allowedNamespaces
-          value: []
-      - equal:
-          path: spec.allowAllNamespaces
-          value: false
-
-  # Rendered without toYaml this comes out as `[alpha beta]`, which YAML reads as the
-  # single string "alpha beta" rather than two namespaces.
-  - it: passes every allowed namespace through as its own list entry
-    templates:
-      - network.yaml
-    set:
-      network.allowedNamespaces: [alpha, beta]
-    asserts:
-      - equal:
-          path: spec.allowedNamespaces
-          value: [alpha, beta]
-
-  - it: labels every resource it renders
-    templates:
-      - credentials.yaml
-      - network.yaml
-      - backuppolicy.yaml
       - rituals/maintenance.yaml
       - rituals/restart.yaml
-    set:
-      backup.enabled: true
     asserts:
       - exists:
           path: metadata.labels["helm.sh/chart"]
-      - equal:
+      - matchRegex:
           path: metadata.labels["app.kubernetes.io/name"]
-          value: ferment
+          pattern: .+
       - equal:
           path: metadata.labels["app.kubernetes.io/instance"]
           value: instance
       - equal:
           path: metadata.labels["app.kubernetes.io/managed-by"]
           value: Helm
-
-  # Helm re-renders on every reconcile. A time drawn at random each time would move the
-  # backup every few minutes, so it is hashed out of the instance instead.
-  - it: gives an instance the same nightly time on every render
-    templates:
-      - backuppolicy.yaml
-    release:
-      name: instance
-      namespace: instance-ns
-    set:
-      backup.enabled: true
-    asserts:
-      - equal:
-          path: spec.schedule
-          value: "12 23 * * *"
-
-  - it: gives another instance a different nightly time
-    templates:
-      - backuppolicy.yaml
-    release:
-      name: instance
-      namespace: other-ns
-    set:
-      backup.enabled: true
-    asserts:
-      - notEqual:
-          path: spec.schedule
-          value: "12 23 * * *"
-      - matchRegex:
-          path: spec.schedule
-          pattern: ^[0-9]{1,2} (22|23|0|1|2|3|4|5) \* \* \*$
-
-  # In BucketOnly mode the service's own operator writes the backups. Ampulla only hands it
-  # a bucket, and neither schedule nor retention is its to act on.
-  - it: asks for nothing but a bucket when the service backs itself up
-    templates:
-      - backuppolicy.yaml
-    set:
-      backup.enabled: true
-      backup.mode: BucketOnly
-      backup.schedule.backup: "0 2 * * *"
-      backup.retention.keepDaily: 14
-      backup.bucketClassName: backups-lpg
-    asserts:
-      - equal:
-          path: spec.mode
-          value: BucketOnly
-      - equal:
-          path: spec.bucketClassName
-          value: backups-lpg
-      - notExists:
-          path: spec.schedule
-      - notExists:
-          path: spec.pruneSchedule
-      - notExists:
-          path: spec.retention

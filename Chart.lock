@@ -1,3 +1,6 @@
-dependencies: []
-digest: sha256:643d5437104296e21d906ecb15b2c96ad278f20cfc4af53b12bb6069bd853726
-generated: "2026-08-17T06:53:40.669430175Z"
+dependencies:
+- name: azoth
+  repository: oci://ghcr.io/helmetica-framework
+  version: 0.0.2
+digest: sha256:19aebaeb08d4df4bd0fe1d61c7816808837caf63c0dd94259858dbc943966664
+generated: "2026-09-15T12:51:17.335881885Z"
