@@ -1,92 +1,32 @@
 suite: reagent templates
 release:
   name: instance
+values:
+  # What the cel: expressions compute for the chart's own defaults. Helm does not
+  # evaluate them, so a reagent renders as the literal string "cel: ..." without
+  # this. `just values` writes it, `just test` fails when it is stale.
+  - ./scenarios/default/computed.yaml
 tests:
-  # What azoth renders is azoth's own business to test, down to the kinds, the gating and
-  # the labels. This is here to catch the wiring coming loose: the dependency, the include,
-  # and the values this chart carries reaching azoth rather than azoth's own defaults.
-  - it: renders the framework's resources through azoth
-    templates:
-      - azoth.yaml
-    set:
-      backup.mode: BucketOnly
+  # A snapshot pins every field of every rendered resource, so a change nobody
+  # meant to make shows up as a diff. Read the diff, then take it with
+  # `helm unittest -u .` once it is the change you wanted.
+  - it: renders what it rendered last time
     asserts:
-      - equal:
-          path: spec.mode
-          value: BucketOnly
-        documentSelector:
-          path: kind
-          value: BackupPolicy
+      - matchSnapshot: {}
 
-  # The arcanum is this chart's own template rather than azoth's: the mapping is the chart
-  # author's to write, in the template itself, where an entry is free to turn on something
-  # helm decides.
-  - it: hands the service's connection details to arcana
-    templates:
-      - credentials.yaml
-    asserts:
-      - isKind:
-          of: Arcanum
-      - equal:
-          path: metadata.name
-          value: credentials
-      - exists:
-          path: metadata.labels["helm.sh/chart"]
-      - equal:
-          path: spec.target.name
-          value: instance-credentials
-      # Scaffolded, the arcanum declares the secret and maps nothing into it yet.
-      - notExists:
-          path: spec.credentials.valueMapping
-
-  - it: lets the chart name the credentials secret
-    templates:
-      - credentials.yaml
-    set:
-      credentials.targetSecret: instance-conn
-    asserts:
-      - equal:
-          path: spec.target.name
-          value: instance-conn
-
-  - it: renders a ritual definition per ritual
-    templates:
-      - rituals/maintenance.yaml
-      - rituals/restart.yaml
-    asserts:
-      - isKind:
-          of: Definition
-      - isAPIVersion:
-          of: rituals.helmetica.io/v1
-      - equal:
-          path: spec.jobTemplate.spec.template.spec.restartPolicy
-          value: Never
-
-  - it: restarts the deployment of the release
-    templates:
-      - rituals/restart.yaml
-    asserts:
-      - equal:
-          path: spec.jobTemplate.spec.template.spec.containers[0].args
-          value: ["rollout", "restart", "deployment/instance"]
-
-  # The rituals are this chart's own templates, so they label themselves through azoth's
-  # helper rather than getting the labels handed to them. The chart name is not pinned to a
-  # value here: this file is scaffolded into a reagent as it stands, where the name is the
-  # reagent's.
-  - it: labels the rituals it renders
-    templates:
-      - rituals/maintenance.yaml
-      - rituals/restart.yaml
-    asserts:
-      - exists:
-          path: metadata.labels["helm.sh/chart"]
-      - matchRegex:
-          path: metadata.labels["app.kubernetes.io/name"]
-          pattern: .+
-      - equal:
-          path: metadata.labels["app.kubernetes.io/instance"]
-          value: instance
-      - equal:
-          path: metadata.labels["app.kubernetes.io/managed-by"]
-          value: Helm
+  # A scenario is a second snapshot of the same templates under different values,
+  # for the cases a reagent has to keep an eye on: backups off, HA on, whatever
+  # this service's values turn. Write test/unit/scenarios/<name>/values.yaml with
+  # the values it overrides, run `just values` to generate its computed.yaml
+  # beside it, then copy this test:
+  #
+  # - it: renders with backups disabled
+  #   values:
+  #     - ./scenarios/backup-disabled/values.yaml
+  #     - ./scenarios/backup-disabled/computed.yaml
+  #   asserts:
+  #     - matchSnapshot: {}
+  #
+  # Order matters: the scenario's own values first, its computed values second,
+  # the same way the cluster resolves them. Use a values file rather than `set:`,
+  # which reaches Helm but never the cel: expressions.

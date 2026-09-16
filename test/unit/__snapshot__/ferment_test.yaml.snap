@@ -1,0 +1,111 @@
+renders what it rendered last time:
+  1: |
+    apiVersion: seals.helmetica.io/v1
+    kind: Seal
+    metadata:
+      labels:
+        app.kubernetes.io/instance: instance
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ferment
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: ferment-0.0.26
+      name: networkconfig
+    spec:
+      allowAllNamespaces: false
+      allowedNamespaces: []
+  2: |
+    apiVersion: rituals.helmetica.io/v1
+    kind: Maintenance
+    metadata:
+      labels:
+        app.kubernetes.io/instance: instance
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ferment
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: ferment-0.0.26
+      name: default
+    spec:
+      suspend: false
+      window: ""
+  3: |
+    apiVersion: backups.helmetica.io/v1
+    kind: BackupPolicy
+    metadata:
+      labels:
+        app.kubernetes.io/instance: instance
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ferment
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: ferment-0.0.26
+      name: instance
+    spec:
+      mode: Schedule
+      schedule:
+        backup: 2 2 * * *
+  4: |
+    apiVersion: arcana.helmetica.io/v1
+    kind: Arcanum
+    metadata:
+      labels:
+        app.kubernetes.io/instance: instance
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ferment
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: ferment-0.0.26
+      name: credentials
+    spec:
+      credentials: {}
+      target:
+        name: instance-credentials
+  5: |
+    apiVersion: rituals.helmetica.io/v1
+    kind: Definition
+    metadata:
+      labels:
+        app.kubernetes.io/instance: instance
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ferment
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: ferment-0.0.26
+      name: maintenance
+    spec:
+      description: 'TODO: describe the weekly maintenance of this service'
+      jobTemplate:
+        spec:
+          template:
+            spec:
+              containers:
+                - args:
+                    - "10"
+                  command:
+                    - sleep
+                  image: registry.k8s.io/kubectl:v1.34.1
+                  name: maintenance
+              restartPolicy: Never
+  6: |
+    apiVersion: rituals.helmetica.io/v1
+    kind: Definition
+    metadata:
+      labels:
+        app.kubernetes.io/instance: instance
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ferment
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: ferment-0.0.26
+      name: restart
+    spec:
+      description: Restart the application
+      jobTemplate:
+        spec:
+          template:
+            spec:
+              containers:
+                - args:
+                    - rollout
+                    - restart
+                    - deployment/instance
+                  command:
+                    - kubectl
+                  image: registry.k8s.io/kubectl:v1.34.1
+                  name: restart
+              restartPolicy: Never

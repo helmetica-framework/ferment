@@ -37,6 +37,7 @@ What this chart carries itself is the part a service maintainer owns:
 | `templates/rituals/` | `restart` and `maintenance` as skeletons to fill in. `transmuter ritual add` scaffolds more. |
 | `templates/azoth.yaml` | The one include that renders everything azoth owns. |
 | `test/` | The unit tests and the touchstone, both meant to grow reagent-specific cases. |
+| `computed-values.yaml` | Generated: what the `cel:` expressions in `values.yaml` compute. Helm cannot evaluate them, so the unit tests and any plain `helm template` need this file. |
 
 ## Developing Ferment and Azoth
 
@@ -63,11 +64,15 @@ Every test therefore gets its own group and CRD, so tests running side by side,
 whether siblings of one run or two runs on a shared cluster, cannot clash.
 
 `just test` vendors the chart's dependencies, runs `helm lint` and the offline unit tests
-in `test/unit`, which assert that the templates render as expected (helm-unittest plugin,
-installed by the recipe if missing). No cluster needed, but azoth has to be reachable for
-`helm dependency build`. What azoth renders is tested in azoth; the tests here cover the
-rituals and the wiring.
+in `test/unit` (helm-unittest plugin, installed by the recipe if missing). No cluster needed,
+but azoth has to be reachable for `helm dependency build`. What azoth renders is tested in
+azoth; the tests here cover the rituals and the wiring.
 
+The unit tests are snapshots: they render the templates and compare against
+`test/unit/__snapshot__/`, so any change to the output shows up as a diff instead of only
+the fields someone thought to assert on. Read the diff, then take it with
+`helm unittest -u .`. The snapshot is not packaged, because it pins this chart's own name
+and version; a fresh reagent writes its own on the first `just test`.
 
 All three are generic and only check that the chart installs and renders
 properly. Any reagent specific tests and asserts are to be added by a service

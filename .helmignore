@@ -24,3 +24,6 @@
 .vscode/
 # Packaged charts of this chart itself, charts/ dependencies stay
 /*.tgz
+# A snapshot pins this chart's own name and version into every label block, so it
+# cannot travel into a reagent. A fresh reagent writes its own on the first test run.
+test/unit/__snapshot__/
