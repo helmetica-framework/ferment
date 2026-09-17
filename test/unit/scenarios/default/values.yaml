@@ -1,0 +1,4 @@
+# The chart's own defaults, overriding nothing. It exists so the default render is
+# a scenario like any other: `just values` generates its computed.yaml and
+# `just test` checks it for drift.
+{}

@@ -3,7 +3,7 @@ kind: Definition
 metadata:
   name: maintenance
   labels:
-    {{- include "<CHARTNAME>.labels" . | nindent 4 }}
+    {{- include "azoth.labels" . | nindent 4 }}
 spec:
   description: "TODO: describe the weekly maintenance of this service"
   jobTemplate:

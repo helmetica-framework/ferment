@@ -3,6 +3,8 @@ version := `awk '/^version:/{print $2}' Chart.yaml`
 major := `awk '/^version:/{split($2, v, "."); print v[1]}' Chart.yaml`
 
 REGISTRY := "oci://ghcr.io/helmetica-framework"
+# Holds the released azoth dependency while `just link` points it at a checkout
+AZOTH_LINK := ".azoth-link"
 # Registry of a local athanor (just ignite), reachable as localhost from the host
 # and as registry.kube-system.svc from inside the cluster.
 ATHANOR_REGISTRY := "localhost:5000/charts"
@@ -15,25 +17,114 @@ CHAINSAW_CMD := "go run github.com/kyverno/chainsaw@" + CHAINSAW_VERSION
 # renovate: datasource=github-releases depName=helm-unittest/helm-unittest
 UNITTEST_VERSION := "v1.1.2"
 
+# Pinned until we have a tag, renovate bumps it
+# renovate: datasource=go depName=github.com/helmetica-framework/transmuter
+TRANSMUTER_VERSION := "v0.0.0-20260916083147-e03aac06c783"
+TRANSMUTER_CMD := "go run github.com/helmetica-framework/transmuter@" + TRANSMUTER_VERSION
+
 _default:
     @just --list
 
-# Lint the chart and unit test the rendered templates
-test:
+# Write the values the cel: expressions compute, for the defaults and every scenario (--check to verify instead)
+values *FLAGS:
     #!/usr/bin/env bash
     set -euo pipefail
-    helm plugin list | grep -q '^unittest' \
-        || helm plugin install https://github.com/helm-unittest/helm-unittest --version {{ UNITTEST_VERSION }}
-    helm lint .
+    # nullglob: a reagent with no scenarios must not iterate the pattern itself
+    shopt -s nullglob
+    for scenario in test/unit/scenarios/*/values.yaml; do
+        {{ TRANSMUTER_CMD }} values --name instance \
+            -f "$scenario" \
+            --output "$(dirname "$scenario")/computed.yaml" {{ FLAGS }}
+    done
+
+# Install the helm-unittest plugin, unless it is already there
+_unittest:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    # No `| grep -q`: it exits on the first match, and the SIGPIPE that gives
+    # helm trips pipefail often enough to make this flaky.
+    installed=$(helm plugin list)
+    case "$installed" in
+        *unittest*) exit 0 ;;
+    esac
+    # helm 4 refuses an unsigned plugin source without --verify=false, and helm 3
+    # has no such flag, so ask helm which one it is.
+    verify=()
+    help=$(helm plugin install --help 2>&1)
+    case "$help" in
+        *--verify*) verify=(--verify=false) ;;
+    esac
+    helm plugin install https://github.com/helm-unittest/helm-unittest \
+        --version {{ UNITTEST_VERSION }} "${verify[@]}"
+
+# Regenerate every snapshot, for the defaults and every scenario
+gen-golden-all: values _unittest
+    #!/usr/bin/env bash
+    set -euo pipefail
+    helm dependency update .
+    helm unittest --update-snapshot --file 'test/unit/*_test.yaml' .
+
+# Lint the chart and snapshot test the rendered templates
+test: (values "--check") _unittest
+    #!/usr/bin/env bash
+    set -euo pipefail
+    helm dependency update .
+    # with the computed values: lint renders the chart, and a subchart cannot
+    # iterate over a raw cel: expression
+    helm lint -f test/unit/scenarios/default/computed.yaml .
     helm unittest --file 'test/unit/*_test.yaml' .
 
 # Package the chart
 build:
-    helm dependency build .
+    helm dependency update .
     helm package .
 
+# Develop against a local azoth checkout: just link ../azoth
+link path="../azoth":
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test ! -f {{ AZOTH_LINK }} || { echo "already linked, run 'just unlink' first"; exit 1; }
+    test -f "{{ path }}/Chart.yaml" || { echo "no chart at {{ path }}"; exit 1; }
+    yq '.dependencies[] | select(.name == "azoth") | [.repository, .version] | .[]' \
+        Chart.yaml > {{ AZOTH_LINK }}
+    just _azoth-dep "file://{{ path }}" "$(yq '.version' "{{ path }}/Chart.yaml")"
+    helm dependency update .
+
+# Point the azoth dependency back at the registry
+unlink:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    test -f {{ AZOTH_LINK }} || exit 0
+    { read -r repository; read -r version; } < {{ AZOTH_LINK }}
+    just _azoth-dep "$repository" "$version"
+    rm -f {{ AZOTH_LINK }} Chart.lock charts/azoth-*.tgz
+    echo "azoth dependency restored to $repository $version"
+
+# Rewrite the azoth dependency's repository and version, leaving the rest of Chart.yaml alone
+_azoth-dep repository version:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    awk -v repo='{{ repository }}' -v ver='{{ version }}' '
+        /^[[:space:]]*-[[:space:]]*name:[[:space:]]*azoth[[:space:]]*$/ { inblock=1; print; next }
+        /^[[:space:]]*-[[:space:]]/ { inblock=0 }
+        inblock && /^[[:space:]]*repository:/ { sub(/repository:.*/, "repository: " repo); print; next }
+        inblock && /^[[:space:]]*version:/ { sub(/version:.*/, "version: " ver); print; next }
+        { print }
+    ' Chart.yaml > Chart.yaml.tmp
+    mv Chart.yaml.tmp Chart.yaml
+
+# Refuse to run while the azoth dependency points at a local checkout
+_guard-unlinked:
+    #!/usr/bin/env bash
+    set -euo pipefail
+    repository=$(yq '.dependencies[] | select(.name == "azoth") | .repository' Chart.yaml)
+    if [ -f {{ AZOTH_LINK }} ] || [ "${repository#file://}" != "$repository" ]; then
+        echo "azoth is $repository, run 'just unlink' first"
+        exit 1
+    fi
+
 # Push the packaged chart to the registry
-push: build
+push: _guard-unlinked build
     helm push {{ chart }}-{{ version }}.tgz {{ REGISTRY }}
 
 # Read the reagent's purity: end-to-end test against a running athanor cluster (just ignite).
@@ -41,7 +132,7 @@ touchstone:
     {{ CHAINSAW_CMD }} test --config test/touchstone/chainsaw-config.yaml test/touchstone
 
 # Push main, tag the current commit and push the tag to trigger the release
-release:
+release: _guard-unlinked
     #!/usr/bin/env bash
     set -euo pipefail
     # Abort if the Chart.yaml version on main doesn't match the working copy.
@@ -58,7 +149,7 @@ release:
 
 # Install the reagent via helm install
 mix namespace="default":
-    transmuter mix --namespace {{ namespace }}
+    {{ TRANSMUTER_CMD }} mix --namespace {{ namespace }}
 
 # Install the reagent via helmetica into a running athanor cluster (just ignite).
 infuse namespace="default" id="": build

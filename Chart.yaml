@@ -9,5 +9,8 @@ version: 0.0.26
 
 appVersion: "1.16.0"
 
-# TODO: once we have a lib
-dependencies: []
+dependencies:
+  # The framework's shared templates. templates/azoth.yaml is what renders them.
+  - name: azoth
+    version: 0.0.2
+    repository: oci://ghcr.io/helmetica-framework
