@@ -61,8 +61,6 @@ mix namespace="default":
     transmuter mix --namespace {{ namespace }}
 
 # Install the reagent via helmetica into a running athanor cluster (just ignite).
-# An id, when given, is folded into the API group and the source names, so a
-# touchstone can run multiple tests in parallel without clashing.
 infuse namespace="default" id="": build
     #!/usr/bin/env bash
     set -euo pipefail
