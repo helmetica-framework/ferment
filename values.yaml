@@ -59,6 +59,23 @@ network:
   # Allow access from all namespaces.
   allowAllNamespaces: false
 
+  # Make this service reachable from outside the cluster. The address and port are
+  # reported on the instance's connetion details.
+  expose: false
+
+  # What `expose` makes reachable, one entry per port. Sigillum picks the outside port.
+  # Not settable on a claim.
+  #
+  #   exposures:
+  #     - name: myservice
+  #       protocol: TCP
+  #       backend:
+  #         service: myservice
+  #         port: 1234
+  '#exposures':
+    export: false
+  exposures: []
+
 # When this service's maintenance runs. The adept reads these off the instance.
 maintenance:
   # Whether this service takes part in maintenance at all. Not settable on a claim.
