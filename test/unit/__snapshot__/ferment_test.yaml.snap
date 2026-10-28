@@ -8,7 +8,7 @@ renders what it rendered last time:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ferment
         app.kubernetes.io/version: 1.16.0
-        helm.sh/chart: ferment-0.0.26
+        helm.sh/chart: ferment-0.0.27
       name: networkconfig
     spec:
       allowAllNamespaces: false
@@ -22,7 +22,7 @@ renders what it rendered last time:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ferment
         app.kubernetes.io/version: 1.16.0
-        helm.sh/chart: ferment-0.0.26
+        helm.sh/chart: ferment-0.0.27
       name: default
     spec:
       suspend: false
@@ -36,7 +36,7 @@ renders what it rendered last time:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ferment
         app.kubernetes.io/version: 1.16.0
-        helm.sh/chart: ferment-0.0.26
+        helm.sh/chart: ferment-0.0.27
       name: instance
     spec:
       mode: Schedule
@@ -51,7 +51,7 @@ renders what it rendered last time:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ferment
         app.kubernetes.io/version: 1.16.0
-        helm.sh/chart: ferment-0.0.26
+        helm.sh/chart: ferment-0.0.27
       name: allow-monitoring
     spec:
       ingress:
@@ -71,7 +71,7 @@ renders what it rendered last time:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ferment
         app.kubernetes.io/version: 1.16.0
-        helm.sh/chart: ferment-0.0.26
+        helm.sh/chart: ferment-0.0.27
       name: credentials
     spec:
       credentials: {}
@@ -86,7 +86,7 @@ renders what it rendered last time:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ferment
         app.kubernetes.io/version: 1.16.0
-        helm.sh/chart: ferment-0.0.26
+        helm.sh/chart: ferment-0.0.27
       name: maintenance
     spec:
       description: 'TODO: describe the weekly maintenance of this service'
@@ -111,7 +111,7 @@ renders what it rendered last time:
         app.kubernetes.io/managed-by: Helm
         app.kubernetes.io/name: ferment
         app.kubernetes.io/version: 1.16.0
-        helm.sh/chart: ferment-0.0.26
+        helm.sh/chart: ferment-0.0.27
       name: restart
     spec:
       description: Restart the application
