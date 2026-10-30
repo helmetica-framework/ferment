@@ -41,6 +41,19 @@ backup:
     keepMonthly: 0
     keepYearly: 0
 
+# Collect billing relevant values from the claim.
+'#billing':
+  epxort: false
+billing:
+  # Whether the framework should bill this service
+  enabled: true
+  # metadata:
+  #   sla: guaranteed
+  metadata: {}
+  # items:
+  #   storage: "10Gi"
+  items: {}
+
 network:
   # Whether the framework seals this service off at all. A reagent that writes its own
   # network policies turns this off. Not settable on a claim.

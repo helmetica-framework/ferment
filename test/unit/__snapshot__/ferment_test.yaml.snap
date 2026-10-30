@@ -63,6 +63,18 @@ renders what it rendered last time:
       policyTypes:
         - Ingress
   5: |
+    apiVersion: libra.helmetica.io/v1
+    kind: BillingData
+    metadata:
+      labels:
+        app.kubernetes.io/instance: instance
+        app.kubernetes.io/managed-by: Helm
+        app.kubernetes.io/name: ferment
+        app.kubernetes.io/version: 1.16.0
+        helm.sh/chart: ferment-0.0.27
+      name: billing
+    spec: null
+  6: |
     apiVersion: arcana.helmetica.io/v1
     kind: Arcanum
     metadata:
@@ -77,7 +89,7 @@ renders what it rendered last time:
       credentials: {}
       target:
         name: instance-credentials
-  6: |
+  7: |
     apiVersion: rituals.helmetica.io/v1
     kind: Definition
     metadata:
@@ -102,7 +114,7 @@ renders what it rendered last time:
                   image: registry.k8s.io/kubectl:v1.34.1
                   name: maintenance
               restartPolicy: Never
-  7: |
+  8: |
     apiVersion: rituals.helmetica.io/v1
     kind: Definition
     metadata:
