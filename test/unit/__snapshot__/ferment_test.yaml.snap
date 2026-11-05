@@ -1,7 +1,7 @@
 renders what it rendered last time:
   1: |
-    apiVersion: seals.helmetica.io/v1
-    kind: Seal
+    apiVersion: sigillum.helmetica.io/v1
+    kind: NetworkConfig
     metadata:
       labels:
         app.kubernetes.io/instance: instance
@@ -14,7 +14,7 @@ renders what it rendered last time:
       allowAllNamespaces: false
       allowedNamespaces: []
   2: |
-    apiVersion: rituals.helmetica.io/v1
+    apiVersion: adept.helmetica.io/v1
     kind: Maintenance
     metadata:
       labels:
@@ -28,7 +28,7 @@ renders what it rendered last time:
       suspend: false
       window: ""
   3: |
-    apiVersion: backups.helmetica.io/v1
+    apiVersion: ampulla.helmetica.io/v1
     kind: BackupPolicy
     metadata:
       labels:
@@ -75,8 +75,8 @@ renders what it rendered last time:
       name: billing
     spec: null
   6: |
-    apiVersion: arcana.helmetica.io/v1
-    kind: Arcanum
+    apiVersion: custos.helmetica.io/v1
+    kind: CredentialConfig
     metadata:
       labels:
         app.kubernetes.io/instance: instance
@@ -90,7 +90,7 @@ renders what it rendered last time:
       target:
         name: instance-credentials
   7: |
-    apiVersion: rituals.helmetica.io/v1
+    apiVersion: adept.helmetica.io/v1
     kind: Definition
     metadata:
       labels:
@@ -115,7 +115,7 @@ renders what it rendered last time:
                   name: maintenance
               restartPolicy: Never
   8: |
-    apiVersion: rituals.helmetica.io/v1
+    apiVersion: adept.helmetica.io/v1
     kind: Definition
     metadata:
       labels:
