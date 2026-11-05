@@ -1,0 +1,35 @@
+# Asserted once the HelmRelease is ready. $instanceNs is the namespace chrysopoeia
+# released the chart into.
+#
+# Everything below comes from the ferment templates.
+# Add the reagent's own workload here as well, e.g. its StatefulSet becoming ready.
+# ---
+# apiVersion: apps/v1
+# kind: StatefulSet
+# metadata:
+#   name: myservice
+#   namespace: ($instanceNs)
+# (status.readyReplicas == spec.replicas): true
+#
+# The whole contract between a reagent and ampulla: the chart renders the policy,
+# ampulla provisions the bucket and the schedule behind it. Ready means a real
+# bucket exists in athanor's Garage and k8up has a Schedule pointed at it.
+apiVersion: ampulla.helmetica.io/v1
+kind: BackupPolicy
+metadata:
+  name: instance
+  namespace: ($instanceNs)
+status:
+  phase: Ready
+---
+apiVersion: adept.helmetica.io/v1
+kind: Definition
+metadata:
+  name: maintenance
+  namespace: ($instanceNs)
+---
+apiVersion: adept.helmetica.io/v1
+kind: Definition
+metadata:
+  name: restart
+  namespace: ($instanceNs)
