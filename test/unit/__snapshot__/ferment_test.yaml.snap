@@ -87,8 +87,6 @@ renders what it rendered last time:
       name: credentials
     spec:
       credentials: {}
-      target:
-        name: instance-credentials
   7: |
     apiVersion: adept.helmetica.io/v1
     kind: Definition
