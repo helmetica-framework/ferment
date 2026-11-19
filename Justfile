@@ -140,10 +140,11 @@ push: _guard-unlinked build
 [arg('verbose',short="v", value="true", help='Make chainsaw output verbose information')]
 [arg('tests', help='Choose which tests should be run, by default the whole suite is executed')]
 touchstone pause="false" verbose="false" *tests:
+    #!/usr/bin/env bash
     set -euo pipefail
     test -n "{{ HELMETICA_NAMESPACE }}" \
         || { echo "chrysopoeia-controller-manager not found; is chrysopoeia installed?" >&2; exit 1; }
-    @set --; \
+    set --; \
     if [ -z "{{tests}}" ]; then \
         set -- test/touchstone; \
     else \

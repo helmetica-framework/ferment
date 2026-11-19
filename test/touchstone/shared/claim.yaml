@@ -173,10 +173,12 @@ spec:
           crd=$(kubectl get crd \
             -o jsonpath="{.items[?(@.spec.group=='v$major-$id.$chart.helmetica-bundles.io')].metadata.name}")
           [ -n "$crd" ] || { echo "no CRD yet"; exit 0; }
-          ns=$(kubectl -n "$NAMESPACE" get "$crd" "$INSTANCE" -o jsonpath='{.status.instanceNamespace}' 2>/dev/null)
-
+          ns=$(kubectl -n "$NAMESPACE" get "$crd" "$INSTANCE" -o jsonpath='{.status.instanceNamespace}')
           printf '{"chart":"%s","major":"%s","id":"%s","crd":"%s","ns":"%s"}\n' \
             "$chart" "$major" "$id" "$crd" "$ns"
+        env:
+          - name: INSTANCE
+            value: ($instance)
         outputs:
           - name: chart
             value: (json_parse($stdout).chart)
@@ -190,21 +192,45 @@ spec:
             value: (json_parse($stdout).ns)
     - script:
         content: |
-          kubectl -n $instanceNs get helmrelease "$INSTANCE" -o jsonpath='{.status}' 2>/dev/null
+          echo "kubectl -n $instanceNs get helmrelease "$INSTANCE" -o jsonpath='{.status}'"
+          kubectl -n $instanceNs get helmrelease "$INSTANCE" -o jsonpath='{.status}' | jq -r
         env:
           - name: INSTANCE
             value: ($instance)
+          - name: instanceNs
+            value: ($instanceNs)
     - script:
+        env:
+          - name: major
+            value: ($major)
+          - name: id
+            value: ($id)
+          - name: chart
+            value: ($chart)
+          - name: helmeticaNamespace
+            value: ($values.helmeticaNamespace)
         content: |
           name="v$major-$id.$chart"
-          kubectl -n ($values.helmeticaNamespace) get claimdefinition $name -o jsonpath='{.status}' 2>/dev/null
+          echo "kubectl -n $helmeticaNamespace get claimdefinition $name -ojson"
+          kubectl -n $helmeticaNamespace get claimdefinition $name -ojson | jq -r
     - script:
+        env:
+          - name: major
+            value: ($major)
+          - name: id
+            value: ($id)
+          - name: chart
+            value: ($chart)
+          - name: helmeticaNamespace
+            value: ($values.helmeticaNamespace)
         content: |
           name="$chart-v$major-$id"
-          kubectl -n ($values.helmeticaNamespace) get ocirepository $name -o jsonpath='{.status}' 2>/dev/null
+          echo "kubectl -n $helmeticaNamespace get ocirepository $name -o jsonpath='{.status}'"
+          kubectl -n $helmeticaNamespace get ocirepository $name -o jsonpath='{.status}' | jq -r
     - get:
         apiVersion: chrysopoeia.helmetica.io/v1
         kind: ClaimRevision
+        format: json
   cleanup:
     # Chrysopoeia owns the generated CRD, chainsaw does not clean it up.
     - script:
