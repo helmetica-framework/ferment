@@ -194,20 +194,17 @@ spec:
         env:
           - name: INSTANCE
             value: ($instance)
-    - describe:
-        apiVersion: chrysopoeia.helmetica.io/v1
-        kind: ClaimDefinition
-        namespace: ($values.helmeticaNamespace)
-    - describe:
-        apiVersion: source.toolkit.fluxcd.io/v1
-        kind: OCIRepository
-        namespace: ($values.helmeticaNamespace)
-    - describe:
+    - script:
+        content: |
+          name="v$major-$id.$chart"
+          kubectl -n ($values.helmeticaNamespace) get claimdefinition $name -o jsonpath='{.status}' 2>/dev/null
+    - script:
+        content: |
+          name="$chart-v$major-$id"
+          kubectl -n ($values.helmeticaNamespace) get ocirepository $name -o jsonpath='{.status}' 2>/dev/null
+    - get:
         apiVersion: chrysopoeia.helmetica.io/v1
         kind: ClaimRevision
-    - describe:
-        apiVersion: ampulla.helmetica.io/v1
-        kind: BackupPolicy
   cleanup:
     # Chrysopoeia owns the generated CRD, chainsaw does not clean it up.
     - script:
