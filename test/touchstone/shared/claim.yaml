@@ -174,8 +174,23 @@ spec:
             -o jsonpath="{.items[?(@.spec.group=='v$major-$id.$chart.helmetica-bundles.io')].metadata.name}")
           [ -n "$crd" ] || { echo "no CRD yet"; exit 0; }
           ns=$(kubectl -n "$NAMESPACE" get "$crd" "$INSTANCE" -o jsonpath='{.status.instanceNamespace}' 2>/dev/null)
-          [ -n "$ns" ] || { echo "no instance namespace yet"; exit 0; }
-          kubectl -n "$ns" describe helmrelease "$INSTANCE" -o jsonpath='{.status}' 2>/dev/null
+
+          printf '{"chart":"%s","major":"%s","id":"%s","crd":"%s","ns":"%s"}\n' \
+            "$chart" "$major" "$id" "$crd" "$ns"
+        outputs:
+          - name: chart
+            value: (json_parse($stdout).chart)
+          - name: major
+            value: (json_parse($stdout).major)
+          - name: id
+            value: (json_parse($stdout).id)
+          - name: crd
+            value: (json_parse($stdout).crd)
+          - name: instanceNs
+            value: (json_parse($stdout).ns)
+    - script:
+        content: |
+          kubectl -n $instanceNs get helmrelease "$INSTANCE" -o jsonpath='{.status}' 2>/dev/null
         env:
           - name: INSTANCE
             value: ($instance)
