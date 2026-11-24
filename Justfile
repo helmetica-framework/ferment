@@ -139,6 +139,7 @@ push: _guard-unlinked build
 [arg('pause', short="p", value="true", help='Pauses Touchstone at failing steps')]
 [arg('verbose',short="v", value="true", help='Make chainsaw output verbose information')]
 [arg('tests', help='Choose which tests should be run, by default the whole suite is executed')]
+[doc('Run the chainsaw test suite, use "just --usage touchstone" for more information"')]
 touchstone pause="false" verbose="false" *tests:
     #!/usr/bin/env bash
     set -euo pipefail
