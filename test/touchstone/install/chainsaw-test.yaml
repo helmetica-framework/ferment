@@ -12,3 +12,17 @@ spec:
     - name: claim an instance and check its workload
       use:
         template: ../shared/claim.yaml
+#    - name: Sample test requiring the instance namespace
+#      try:
+## Get the instanceNamespace from configMap generated in StepTemplate(shared/claim.yaml)
+#      - script:
+#          env:
+#            - name: NAMESPACE
+#              value: ($namespace)
+#          content: |
+#            kubectl get configmap generated-namespace \
+#              -n $NAMESPACE \
+#              -o jsonpath='{.data.namespace}'
+#          outputs:
+#            - name: instanceNS
+#              value: ($stdout)
