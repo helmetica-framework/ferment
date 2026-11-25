@@ -1,0 +1,13 @@
+= Develop ferment and azoth
+
+To use a local azoth, run `just link /path/to/azoth`.
+Once finished, restore the initial config with `just unlink`.
+
+To use a local ferment in the transmuter, pass `--ferment-url /path/to/ferment`.
+
+[source,console]
+----
+$ just test        # lint and unit tests
+$ just touchstone  # end to end against a running athanor
+$ just docs        # build these docs, fails on warnings
+----

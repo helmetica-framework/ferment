@@ -1,0 +1,29 @@
+= What is in a reagent
+
+The framework's own resources are rendered by xref:azoth::index.adoc[azoth] and pulled in by the single include in `templates/azoth.yaml`.
+They are not copied into a reagent.
+To get the latest features, keep the azoth dependency up to date.
+
+What this chart carries itself is the part a service maintainer owns:
+
+[cols="2,5",options="header"]
+|===
+|Path |What it is for
+
+|`values.yaml`
+|The reagent's API surface: the claim CRD is generated from this file, and it is passed to azoth. Keys marked `export: false` are the chart author's and hardcoded.
+
+|`templates/rituals/`
+|`restart` and `maintenance` as skeletons to fill in. `transmuter ritual add` scaffolds more.
+
+|`templates/azoth.yaml`
+|The one include that renders everything azoth owns.
+
+|`test/`
+|The unit tests and the touchstone, both meant to grow reagent-specific cases.
+
+|`computed-values.yaml`
+|Generated: what the `cel:` expressions in `values.yaml` compute. Helm cannot evaluate them, so the unit tests and any plain `helm template` need this file.
+|===
+
+The transmuter also writes a `docs/` skeleton for the reagent's end-user documentation, which docs.helmetica.io renders.
