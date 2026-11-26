@@ -1,0 +1,9 @@
+= Unit tests
+
+`just test` vendors the chart's dependencies, runs `helm lint` and the offline unit tests in `test/unit` (helm-unittest plugin, installed by the recipe if missing).
+No cluster needed, but azoth has to be reachable for `helm dependency build`.
+What azoth renders is tested in azoth; the tests here cover the rituals and the wiring.
+
+The unit tests are snapshots: they render the templates and compare against `test/unit/__snapshot__/`, so any change to the output shows up as a diff instead of only the fields someone thought to assert on.
+Read the diff, then take it with `helm unittest -u .`.
+The snapshot is not packaged, because it pins this chart's own name and version; a fresh reagent writes its own on the first `just test`.

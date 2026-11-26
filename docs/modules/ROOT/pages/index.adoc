@@ -1,0 +1,8 @@
+= Ferment
+
+A small bit of transformed matter added to a base mass to convert the whole, like leaven in dough.
+The Philosopher's Stone was often called "ferment" for this reason.
+
+Ferment is the starter chart the xref:transmuter::index.adoc[transmuter] creates every reagent from.
+Everything in it ends up in each new reagent, so these pages describe what a fresh reagent contains and how its tests work.
+The terms are explained in xref:ROOT::concepts.adoc[Concepts].
