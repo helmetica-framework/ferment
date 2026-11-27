@@ -1,0 +1,97 @@
+= The reagent's values.yaml
+
+A reagent is a Helm chart, and its `values.yaml` is its API.
+xref:chrysopoeia::index.adoc[Chrysopoeia] generates the claim CRD from it: every value becomes a field, and its default becomes the field's default.
+A user can override each of them per instance, unless the chart hides it.
+
+Comments, types and hiding are controlled with hints, see xref:chrysopoeia::references/values-hints.adoc[values.yaml hints].
+The comment above a key becomes the field's description, and users read it with `kubectl explain` and on the reagent's generated Parameters page.
+
+A fresh reagent's `values.yaml` has these sections.
+The framework's operators read them off the instance; the templates that hand them over come from xref:azoth::index.adoc[azoth].
+
+.values.yaml, abridged
+[source,yaml]
+----
+backup:
+  enabled: true
+  mode: Schedule
+billing:
+  enabled: true
+network:
+  allowedNamespaces: []
+  allowAllNamespaces: false
+  expose: false
+maintenance:
+  window: ""
+credentials:
+  prefix: ""
+service: {}
+----
+
+[#backup]
+== backup
+
+How the service is backed up, see xref:azoth::explanations/backup.adoc[Backup].
+The default `mode: Schedule` provisions a bucket through COSI and runs a K8up schedule over every PVC in the instance namespace.
+`BucketOnly` provisions the bucket and stops there, for a service whose own operator writes backups to object storage.
+
+Copying files off a running application can result in a corrupted backup.
+Most applications ship a backup command that produces a consistent dump instead.
+For application-aware backups, set K8up's annotations on the service's pods through the upstream chart's values:
+
+.K8up backup annotations
+[source,yaml]
+----
+service:
+  podAnnotations:
+    k8up.io/backupcommand: mysqldump -uroot -psecure --all-databases
+----
+
+The command's output is streamed to the backup target.
+Set `k8up.io/backup: "false"` on a PVC to skip it, so data the backup command already covers isn't backed up a second time.
+Users must not change these annotations, so hide them with xref:chrysopoeia::references/values-hints.adoc#hiding[`export: false`].
+For more advanced setups, see the https://docs.k8up.io[K8up docs].
+
+[#billing]
+== billing
+
+Which values of the claim are collected for billing, see xref:azoth::explanations/billing.adoc[Billing data].
+
+[#network]
+== network
+
+Makes sure the service is reachable from the namespace the claim was created in, and nothing else, see xref:azoth::explanations/network.adoc[Network].
+`allowedNamespaces` and `allowAllNamespaces` let users open it to more namespaces.
+`expose` makes it reachable from outside the cluster; the chart lists what that exposes in `exposures`.
+
+[#maintenance]
+== maintenance
+
+When the service's maintenance runs, see xref:azoth::explanations/maintenance.adoc[Maintenance].
+`window` names a `MaintenanceWindow`; empty takes the operator's default one.
+
+[#credentials]
+== credentials
+
+A service is only usable if its user gets credentials for it.
+xref:custos::index.adoc[Custos] writes them into a secret beside the claim, named after `prefix`, or the claim name when it is empty, plus a hash of the claim's kind.
+
+Which keys the secret contains, and where their values come from, is defined in `templates/credentials.yaml`.
+The file contains one example per source to start from.
+
+[#service]
+== service
+
+The values for the upstream chart itself.
+The xref:ROOT::concepts.adoc#prima-materia[prima materia] is a chart dependency with the alias `service`, so everything the upstream chart expects at the top level is nested under this key.
+Whatever you set here is the default for every instance.
+
+[#rituals]
+== Rituals
+
+Operations on demand, such as a restart, a triggered backup or a command in a pod, are not configured in `values.yaml`.
+They are xref:ROOT::concepts.adoc#ritual[rituals] in `templates/rituals/`.
+A fresh reagent has `restart.yaml` and `maintenance.yaml` there as skeletons to adapt to the service.
+`maintenance.yaml` runs during the service's scheduled maintenance and can carry any housekeeping it needs, for example a regular `VACUUM` on PostgreSQL.
+xref:transmuter::how-tos/add-ritual.adoc[`transmuter ritual add`] scaffolds more.

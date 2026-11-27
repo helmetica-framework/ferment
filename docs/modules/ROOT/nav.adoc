@@ -2,6 +2,7 @@
 
 .Explanations
 * xref:explanations/contents.adoc[What is in a reagent]
+* xref:explanations/values.adoc[The reagent's values.yaml]
 * xref:explanations/touchstone.adoc[Touchstone tests]
 * xref:explanations/unit-tests.adoc[Unit tests]
 

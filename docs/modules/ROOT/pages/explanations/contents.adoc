@@ -11,7 +11,7 @@ What this chart carries itself is the part a service maintainer owns:
 |Path |What it is for
 
 |`values.yaml`
-|The reagent's API surface: the claim CRD is generated from this file, and it is passed to azoth. Keys marked `export: false` are the chart author's and hardcoded.
+|The reagent's API surface: the claim CRD is generated from this file, and it is passed to azoth. Keys marked `export: false` are the chart author's and hardcoded. See xref:explanations/values.adoc[The reagent's values.yaml].
 
 |`templates/rituals/`
 |`restart` and `maintenance` as skeletons to fill in. `transmuter ritual add` scaffolds more.
