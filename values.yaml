@@ -43,7 +43,7 @@ backup:
 
 # Collect billing relevant values from the claim.
 '#billing':
-  epxort: false
+  export: false
 billing:
   # Whether the framework should bill this service
   enabled: true
