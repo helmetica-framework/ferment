@@ -22,7 +22,7 @@ CHAINSAW_VERSION := "v0.2.15"
 CHAINSAW_CMD := "go run github.com/kyverno/chainsaw@" + CHAINSAW_VERSION
 
 # renovate: datasource=github-releases depName=helm-unittest/helm-unittest
-UNITTEST_VERSION := "v1.2.1"
+UNITTEST_VERSION := "v1.3.0"
 
 # Pinned until we have a tag, renovate bumps it
 # renovate: datasource=go depName=github.com/helmetica-framework/transmuter
